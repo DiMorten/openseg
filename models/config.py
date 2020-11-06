@@ -2,7 +2,9 @@ import os
 
 # here (https://github.com/pytorch/vision/tree/master/torchvision/models) to find the download link of pretrained models
 
-root = '/home/hugo/FCN/pytorch-semantic-segmentation-master/pretrained'
+#root = '/home/hugo/FCN/pytorch-semantic-segmentation-master/pretrained'
+root = '/content/pretrained'
+
 alexnet_path = os.path.join(root, 'AlexNet', 'alexnet-owt-4df8aa71.pth')
 res101_path = os.path.join(root, 'ResNet', 'resnet101-5d3b4d8f.pth')
 res152_path = os.path.join(root, 'ResNet', 'resnet152-b121ed2d.pth')
