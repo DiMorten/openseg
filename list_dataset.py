@@ -188,8 +188,8 @@ class ListDataset(data.Dataset):
                           fill_value=6,
                           dtype=np.int64)
         
-        img[:img_raw.shape[0], :img_raw.shape[1]] = img_raw
-        msk[:msk_raw.shape[0], :msk_raw.shape[1]] = msk_raw
+        img[:img_raw.shape[0], :img_raw.shape[1], :] = img_raw
+        msk[:msk_raw.shape[0], :msk_raw.shape[1], :] = msk_raw
         
         if 'Potsdam' or 'Vaihingen' in self.root:
             msk = self.mask_to_class(msk)
