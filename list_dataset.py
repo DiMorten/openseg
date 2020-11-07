@@ -191,7 +191,7 @@ class ListDataset(data.Dataset):
         img[:img_raw.shape[0], :img_raw.shape[1]] = img_raw
         msk[:msk_raw.shape[0], :msk_raw.shape[1]] = msk_raw
         
-        if 'Potsdam' in self.root:
+        if 'Potsdam' or 'Vaihingen' in self.root:
             msk = self.mask_to_class(msk)
         
         msk, msk_true = self.shift_labels(msk)
