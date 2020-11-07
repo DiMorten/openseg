@@ -176,7 +176,7 @@ class ListDataset(data.Dataset):
                       fill_value=0.0,
                       dtype=np.float32)
         
-        if 'Potsdam' in self.root:
+        if 'Potsdam' or 'Vaihingen' in self.root:
             msk = np.full((msk_raw.shape[0] + self.crop_size[0] - (msk_raw.shape[0] % self.crop_size[0]),
                            msk_raw.shape[1] + self.crop_size[1] - (msk_raw.shape[1] % self.crop_size[1]),
                            msk_raw.shape[2]),
@@ -188,8 +188,8 @@ class ListDataset(data.Dataset):
                           fill_value=6,
                           dtype=np.int64)
         
-        img[:img_raw.shape[0], :img_raw.shape[1], :] = img_raw
-        msk[:msk_raw.shape[0], :msk_raw.shape[1], :] = msk_raw
+        img[:img_raw.shape[0], :img_raw.shape[1]] = img_raw
+        msk[:msk_raw.shape[0], :msk_raw.shape[1]] = msk_raw
         
         if 'Potsdam' or 'Vaihingen' in self.root:
             msk = self.mask_to_class(msk)
