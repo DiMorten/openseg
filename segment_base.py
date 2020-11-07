@@ -364,6 +364,10 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
                     labs_np = labs.detach().squeeze(0).cpu().numpy()
                     true_np = true.detach().squeeze(0).cpu().numpy()
                     
+                    print("Test patch result shape",labs_np.shape,true_np.shape)
+                    accuracy_value = metrics.accuracy_score(true_np,labs_np)
+                    print("Accuracy value",accuracy_value)                    
+                    
                     # Saving predictions.
                     if (save_images):
                         
