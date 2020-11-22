@@ -43,9 +43,9 @@ class ListDataset(data.Dataset):
         img_dir = os.path.join(self.root, self.mode, 'JPEGImages')
         msk_dir = os.path.join(self.root, self.mode, 'Masks')
         
-        if self.mode == 'Validate':
-            img_dir = os.path.join(self.root, 'Train', 'JPEGImages')
-            msk_dir = os.path.join(self.root, 'Train', 'Masks')
+#        if self.mode == 'Validate':
+#            img_dir = os.path.join(self.root, 'Train', 'JPEGImages')
+#            msk_dir = os.path.join(self.root, 'Train', 'Masks')
 
         data_list = sorted([f for f in os.listdir(msk_dir) if os.path.isfile(os.path.join(msk_dir, f))])
 
