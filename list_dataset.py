@@ -37,13 +37,13 @@ class ListDataset(data.Dataset):
     def make_dataset(self):
 
         # Making sure the mode is correct.
-        assert self.mode in ['Train', 'Test', 'Validate']
+        assert self.mode in ['Train', 'Test', 'Validate', 'TrainAsValidation']
 
         # Setting string for the mode.
         img_dir = os.path.join(self.root, self.mode, 'JPEGImages')
         msk_dir = os.path.join(self.root, self.mode, 'Masks')
         
-        if self.mode == 'Validate':
+        if self.mode == 'TrainAsValidation':
             img_dir = os.path.join(self.root, 'Train', 'JPEGImages')
             msk_dir = os.path.join(self.root, 'Train', 'Masks')
 
