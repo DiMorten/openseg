@@ -37,7 +37,7 @@ class ListDataset(data.Dataset):
     def make_dataset(self):
 
         # Making sure the mode is correct.
-        assert self.mode in ['Train', 'Test', 'Validate', 'TrainAsValidation']
+        #assert self.mode in ['Train', 'Test', 'Validate', 'TrainAsValidation']
 
         # Setting string for the mode.
         img_dir = os.path.join(self.root, self.mode, 'JPEGImages')
@@ -205,7 +205,7 @@ class ListDataset(data.Dataset):
             
             img = np.transpose(img, (0, 3, 1, 2))
         
-        elif self.mode == 'Validate':
+        elif self.mode == 'Validate'or self.mode == 'TrainAsValidation':
             
             img, msk, msk_true = self.test_crops(img, msk, msk_true)
             
