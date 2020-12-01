@@ -39,110 +39,81 @@ Classes:
     6 = Boundaries
 '''
 
-# Predefining directories.
-ckpt_path = './ckpt'
-imag_path = './images'
-outp_path = './outputs'
-
-# Setting predefined arguments.
-args = {
-    'epoch_num': 1200,            # Number of epochs.
-    'lr': 1e-3,                   # Learning rate.
-    'weight_decay': 5e-6,         # L2 penalty.
-    'momentum': 0.9,              # Momentum.
-    'num_workers': 4,             # Number of workers on data loader.
-    'print_freq': 1,              # Printing frequency for mini-batch loss.
-    'w_size': 224,                # Width size for image resizing.
-    'h_size': 224,                # Height size for image resizing.
-    'test_freq': 500,            # Test each test_freq epochs.
-    'save_freq': 500,            # Save model each save_freq epochs.
-}
-
-# Reading system parameters.
-conv_name = sys.argv[1]
-args['hidden_classes'] = sys.argv[2]
-print('hidden: ' + sys.argv[2])
-
-dataset_name = sys.argv[3]
-
-hidden = []
-if '_' in args['hidden_classes']:
-    hidden = [int(h) for h in args['hidden_classes'].split('_')]
-else:
-    hidden = [int(args['hidden_classes'])]
-
-num_known_classes = list_dataset.num_classes - len(hidden)
-num_unknown_classes = len(hidden)
-
-if dataset_name == 'Potsdam':
-    args['epoch_num'] = 600
-    args['test_freq'] = 600
-    args['save_freq'] = 600
-    args['num_workers'] = 2
-
-weights = []
-if 4 not in hidden:
-    weights = [1.0 for i in range(num_known_classes)]
-    weights[-1] = 2.0
-else:
-    weights = [1.0 for i in range(num_known_classes)]
-
-weights = torch.FloatTensor(weights)
-
-# Setting experiment name.
-exp_name = conv_name + '_' + dataset_name + '_base_' + args['hidden_classes']
-
-# Setting device [0|1|2].
-args['device'] = 0
 
 # Main function.
 def main(args):
 
+
+    hidden = []
+    if '_' in args['hidden_classes']:
+        hidden = [int(h) for h in args['hidden_classes'].split('_')]
+    else:
+        hidden = [int(args['hidden_classes'])]
+
+    num_known_classes = list_dataset.num_classes - len(hidden)
+    num_unknown_classes = len(hidden)
+
+    weights = []
+    if 4 not in hidden:
+        weights = [1.0 for i in range(num_known_classes)]
+        weights[-1] = 2.0
+    else:
+        weights = [1.0 for i in range(num_known_classes)]
+
+    weights = torch.FloatTensor(weights)
+
+    # Setting experiment name.
+    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_base_' + args['hidden_classes']
+
+    # Setting device [0|1|2].
+    args['device'] = 0
+
+
     # Setting network architecture.
-    if (conv_name == 'unet'):
+    if (args['conv_name'] == 'unet'):
 
         net = UNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50'):
+    elif (args['conv_name'] == 'fcnresnet50'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50pretrained'):
+    elif (args['conv_name'] == 'fcnresnet50pretrained'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnresnext50'):
+    elif (args['conv_name'] == 'fcnresnext50'):
 
         net = FCNResNext50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnwideresnet50'):
+    elif (args['conv_name'] == 'fcnwideresnet50'):
 
         net = FCNWideResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121'):
+    elif (args['conv_name'] == 'fcndensenet121'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121pretrained'):
+    elif (args['conv_name'] == 'fcndensenet121pretrained'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnvgg19'):
+    elif (args['conv_name'] == 'fcnvgg19'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnvgg19pretrained'):
+    elif (args['conv_name'] == 'fcnvgg19pretrained'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcninceptionv3'):
+    elif (args['conv_name'] == 'fcninceptionv3'):
 
         net = FCNInceptionv3(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
 
-    elif (conv_name == 'segnet'):
+    elif (args['conv_name'] == 'segnet'):
 
         net = SegNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
@@ -152,10 +123,10 @@ def main(args):
     args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
 
     # Setting datasets.
-    train_set = list_dataset.ListDataset(dataset_name, 'Train', (args['h_size'], args['w_size']), 'statistical', hidden)
+    train_set = list_dataset.ListDataset(args['dataset_name'], 'Train', (args['h_size'], args['w_size']), 'statistical', hidden)
     train_loader = DataLoader(train_set, batch_size=1, num_workers=args['num_workers'], shuffle=True)
 
-    test_set = list_dataset.ListDataset(dataset_name, 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
+    test_set = list_dataset.ListDataset(args['dataset_name'], 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
     test_loader = DataLoader(test_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
     # Setting criterion.
@@ -172,13 +143,13 @@ def main(args):
     scheduler = optim.lr_scheduler.StepLR(optimizer, args['epoch_num'] // 3, 0.2)
 
     # Making sure checkpoint and output directories are created.
-    check_mkdir(ckpt_path)
-    check_mkdir(os.path.join(ckpt_path, exp_name))
-    check_mkdir(outp_path)
-    check_mkdir(os.path.join(outp_path, exp_name))
+    check_mkdir(args['ckpt_path'])
+    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(args['outp_path'])
+    check_mkdir(os.path.join(args['outp_path'], exp_name))
 
     # Writing training args to experiment log file.
-    open(os.path.join(ckpt_path, exp_name, str(datetime.datetime.now()) + '.txt'), 'w').write(str(args) + '\n\n')
+    open(os.path.join(args['ckpt_path'], exp_name, str(datetime.datetime.now()) + '.txt'), 'w').write(str(args) + '\n\n')
     
     # Iterating over epochs.
     for epoch in range(curr_epoch, args['epoch_num'] + 1):
@@ -188,8 +159,8 @@ def main(args):
 
         if epoch % args['test_freq'] == 0:
             
-            torch.save(net.state_dict(), os.path.join(ckpt_path, exp_name, 'model_' + str(epoch) + '.pth'))
-            torch.save(optimizer.state_dict(), os.path.join(ckpt_path, exp_name, 'opt_' + str(epoch) + '.pth'))
+            torch.save(net.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'model_' + str(epoch) + '.pth'))
+            torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'opt_' + str(epoch) + '.pth'))
             
             # Computing test.
             test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
@@ -266,7 +237,7 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(outp_path, exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -303,27 +274,27 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
                     true = Variable(true).cuda(args['device'])
                     
                     # Forwarding.
-                    if conv_name == 'unet':
+                    if args['conv_name'] == 'unet':
                         outs, dec1, dec2, dec3, dec4 = net(inps, feat=True)
-                    elif conv_name == 'fcnresnet50':
+                    elif args['conv_name'] == 'fcnresnet50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnresnext50':
+                    elif args['conv_name'] == 'fcnresnext50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnwideresnet50':
+                    elif args['conv_name'] == 'fcnwideresnet50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcndensenet121':
+                    elif args['conv_name'] == 'fcndensenet121':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcndensenet121pretrained':
+                    elif args['conv_name'] == 'fcndensenet121pretrained':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnvgg19':
+                    elif args['conv_name'] == 'fcnvgg19':
                         outs, classif1, fv3 = net(inps, feat=True)
-                    elif conv_name == 'fcnvgg19pretrained':
+                    elif args['conv_name'] == 'fcnvgg19pretrained':
                         outs, classif1, fv3 = net(inps, feat=True)
-                    elif conv_name == 'fcninceptionv3':
+                    elif args['conv_name'] == 'fcninceptionv3':
                         outs, classif1, fv4 = net(inps, feat=True)
-                    elif conv_name == 'fcnmobilenetv2':
+                    elif args['conv_name'] == 'fcnmobilenetv2':
                         outs, classif1, fv3 = net(inps, feat=True)
-                    elif conv_name == 'segnet':
+                    elif args['conv_name'] == 'segnet':
                         outs, x_10d, x_20d = net(inps, feat=True)
                     
                     # Computing probabilities.
@@ -333,27 +304,27 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
                     prds = soft_outs.data.max(1)[1]
                     
                     # Obtaining posterior predictions.
-                    if conv_name == 'unet':
+                    if args['conv_name'] == 'unet':
                         feat_flat = torch.cat([outs, dec1, dec2, dec3], 1)
-                    elif conv_name == 'fcnresnet50':
+                    elif args['conv_name'] == 'fcnresnet50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnresnext50':
+                    elif args['conv_name'] == 'fcnresnext50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnwideresnet50':
+                    elif args['conv_name'] == 'fcnwideresnet50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcndensenet121':
+                    elif args['conv_name'] == 'fcndensenet121':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcndensenet121pretrained':
+                    elif args['conv_name'] == 'fcndensenet121pretrained':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnvgg19':
+                    elif args['conv_name'] == 'fcnvgg19':
                         feat_flat = torch.cat([outs, classif1, fv3], 1)
-                    elif conv_name == 'fcnvgg19pretrained':
+                    elif args['conv_name'] == 'fcnvgg19pretrained':
                         feat_flat = torch.cat([outs, classif1, fv3], 1)
-                    elif conv_name == 'fcninceptionv3':
+                    elif args['conv_name'] == 'fcninceptionv3':
                         feat_flat = torch.cat([outs, classif1, fv4], 1)
-                    elif conv_name == 'fcnmobilenetv2':
+                    elif args['conv_name'] == 'fcnmobilenetv2':
                         feat_flat = torch.cat([outs, classif1, fv3], 1)
-                    elif conv_name == 'segnet':
+                    elif args['conv_name'] == 'segnet':
                         feat_flat = torch.cat([outs, x_10d, x_20d], 1)
                     feat_flat = feat_flat.permute(0, 2, 3, 1).contiguous().view(feat_flat.size(0) * feat_flat.size(2) * feat_flat.size(3), feat_flat.size(1)).cpu().numpy()
                     prds_flat = prds.cpu().numpy().ravel()
@@ -371,10 +342,10 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
                     # Saving predictions.
                     if (save_images):
                         
-                        imag_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_img_' + str(j) + '_' + str(k) + '.png'))
-                        mask_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_msk_' + str(j) + '_' + str(k) + '.png'))
-                        true_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_tru_' + str(j) + '_' + str(k) + '.png'))
-                        pred_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prd_' + str(j) + '_' + str(k) + '.png'))
+                        imag_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_img_' + str(j) + '_' + str(k) + '.png'))
+                        mask_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_msk_' + str(j) + '_' + str(k) + '.png'))
+                        true_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_tru_' + str(j) + '_' + str(k) + '.png'))
+                        pred_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prd_' + str(j) + '_' + str(k) + '.png'))
                         
                         io.imsave(imag_path, np.transpose(inps_np, (1, 2, 0)))
                         io.imsave(mask_path, util.img_as_ubyte(labs_np))
@@ -388,8 +359,8 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
         
         if save_model:
 
-            torch.save(net.state_dict(), os.path.join(ckpt_path, exp_name, 'model_' + str(epoch) + '.pth'))
-            torch.save(optimizer.state_dict(), os.path.join(ckpt_path, exp_name, 'opt_' + str(epoch) + '.pth'))
+            torch.save(net.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'model_' + str(epoch) + '.pth'))
+            torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'opt_' + str(epoch) + '.pth'))
 
 if __name__ == '__main__':
     main(args)
