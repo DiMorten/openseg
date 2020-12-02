@@ -63,7 +63,7 @@ def main(args):
 	weights = torch.FloatTensor(weights)
 
 	# Setting experiment name.
-	exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_base_' + args['hidden_classes']
+	args['exp_name'] = args['conv_name'] + '_' + args['dataset_name'] + '_base_' + args['hidden_classes']
 
 	# Setting device [0|1|2].
 	args['device'] = 0
@@ -144,12 +144,12 @@ def main(args):
 
 		# Making sure checkpoint and output directories are created.
 		check_mkdir(args['ckpt_path'])
-		check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+		check_mkdir(os.path.join(args['ckpt_path'], args['exp_name']))
 		check_mkdir(args['outp_path'])
-		check_mkdir(os.path.join(args['outp_path'], exp_name))
+		check_mkdir(os.path.join(args['outp_path'], args['exp_name']))
 
 		# Writing training args to experiment log file.
-		open(os.path.join(args['ckpt_path'], exp_name, str(datetime.datetime.now()) + '.txt'), 'w').write(str(args) + '\n\n')
+		open(os.path.join(args['ckpt_path'], args['exp_name'], str(datetime.datetime.now()) + '.txt'), 'w').write(str(args) + '\n\n')
 		
 		# Iterating over epochs.
 		for epoch in range(curr_epoch, args['epoch_num'] + 1):
@@ -159,8 +159,8 @@ def main(args):
 
 			if epoch % args['test_freq'] == 0:
 				
-				torch.save(net.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'model_' + str(epoch) + '.pth'))
-				torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'opt_' + str(epoch) + '.pth'))
+				torch.save(net.state_dict(), os.path.join(args['ckpt_path'], args['exp_name'], 'model_' + str(epoch) + '.pth'))
+				torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], args['exp_name'], 'opt_' + str(epoch) + '.pth'))
 				
 				# Computing test.
 				test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
@@ -169,11 +169,12 @@ def main(args):
 			
 		print('Exiting training...')
 	else:
-		#exp_name = conv_name + '_' + dataset_name + '_base_' + args['hidden_classes']
-		pretrained_path = os.path.join(args['ckpt_path'], exp_name, 'model_' + str(args['epoch_num']) + '.pth')
+		#args['exp_name'] = conv_name + '_' + dataset_name + '_base_' + args['hidden_classes']
+		pretrained_path = os.path.join(args['ckpt_path'], args['exp_name'], 'model_' + str(args['epoch_num']) + '.pth')
 		print('Loading pretrained weights from file "' + pretrained_path + '"')
 		net.load_state_dict(torch.load(pretrained_path))        
 	
+	print("Testing baseline...")
 	import warnings
 	warnings.filterwarnings("ignore")
 	if args['baseline_train']==True:
@@ -248,7 +249,7 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
 	with torch.no_grad():
 
 		# Creating output directory.
-		check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+		check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
 
 		# Iterating over batches.
 		for i, data in enumerate(test_loader):
@@ -353,10 +354,10 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
 					# Saving predictions.
 					if (save_images):
 						
-						imag_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_img_' + str(j) + '_' + str(k) + '.png'))
-						mask_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_msk_' + str(j) + '_' + str(k) + '.png'))
-						true_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_tru_' + str(j) + '_' + str(k) + '.png'))
-						pred_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prd_' + str(j) + '_' + str(k) + '.png'))
+						imag_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_img_' + str(j) + '_' + str(k) + '.png'))
+						mask_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_msk_' + str(j) + '_' + str(k) + '.png'))
+						true_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_tru_' + str(j) + '_' + str(k) + '.png'))
+						pred_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prd_' + str(j) + '_' + str(k) + '.png'))
 						
 						io.imsave(imag_path, np.transpose(inps_np, (1, 2, 0)))
 						io.imsave(mask_path, util.img_as_ubyte(labs_np))
@@ -370,8 +371,8 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
 		
 		if save_model:
 
-			torch.save(net.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'model_' + str(epoch) + '.pth'))
-			torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], exp_name, 'opt_' + str(epoch) + '.pth'))
+			torch.save(net.state_dict(), os.path.join(args['ckpt_path'], args['exp_name'], 'model_' + str(epoch) + '.pth'))
+			torch.save(optimizer.state_dict(), os.path.join(args['ckpt_path'], args['exp_name'], 'opt_' + str(epoch) + '.pth'))
 
 if __name__ == '__main__':
 	main(args)
