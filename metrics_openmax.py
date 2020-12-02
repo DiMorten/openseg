@@ -124,19 +124,20 @@ def main(args):
         kappa_list.append(kap)
 
     args['thresholds'] = np.asarray(args['thresholds'])
-    acc_known_list = np.asarray(acc_known_list) * 100
-    pre_unk_list = np.asarray(pre_unk_list) * 100
-    rec_unk_list = np.asarray(rec_unk_list) * 100
-    acc_unknown_list = np.asarray(acc_unknown_list) * 100
-    acc_mean_list = np.asarray(acc_mean_list) * 100
-    acc_bal_list = np.asarray(acc_bal_list) * 100
-    kappa_list = np.asarray(kappa_list) * 100
+    metric_values['acc_known_list'] = np.asarray(acc_known_list) * 100
+    metric_values['pre_unk_list'] = np.asarray(pre_unk_list) * 100
+    metric_values['rec_unk_list'] = np.asarray(rec_unk_list) * 100
+    metric_values['acc_unknown_list'] = np.asarray(acc_unknown_list) * 100
+    metric_values['acc_mean_list'] = np.asarray(acc_mean_list) * 100
+    metric_values['acc_bal_list'] = np.asarray(acc_bal_list) * 100
+    metric_values['kappa_list'] = np.asarray(kappa_list) * 100
 
     # if os.path.isfile(args['out_path']):
     #     file_mode = 'a'
     # else:
     #     file_mode = 'w'
     file_mode = 'w'
+    return metric_values
 '''
     with open(args['out_path'], file_mode) as file:
         
