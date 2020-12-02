@@ -37,33 +37,6 @@ Classes:
     6 = Boundaries
 '''
 
-# Predefining directories.
-args['ckpt_path'] = './ckpt'
-args['imag_path'] = './images'
-args['out_path'] = './outputs'
-
-# Setting predefined arguments.
-args = {
-    'epoch_num': 1200,            # Number of epochs.
-    'lr': 1e-4,                   # Learning rate.
-    'weight_decay': 5e-4,         # L2 penalty.
-    'momentum': 0.9,              # Momentum.
-    'num_workers': 4,             # Number of workers on data loader.
-    'print_freq': 1,              # Printing frequency for mini-batch loss.
-    'w_size': 224,                # Width size for image resizing.
-    'h_size': 224,                # Height size for image resizing.
-    'test_freq': 1200,            # Test each test_freq epochs.
-    'save_freq': 1200,            # Save model each save_freq epochs.
-    'open_threshold': 0.7,        # Threshold for OpenSet.
-}
-
-# Reading system parameters.
-args['conv_name'] = sys.argv[1]
-args['hidden_classes'] = sys.argv[2]
-print('hidden: ' + sys.argv[2])
-
-args['dataset_name'] = sys.argv[3]
-
 
 
 # Main function.
