@@ -38,9 +38,9 @@ Classes:
 '''
 
 # Predefining directories.
-ckpt_path = './ckpt'
-imag_path = './images'
-outp_path = './outputs'
+args['ckpt_path'] = './ckpt'
+args['imag_path'] = './images'
+args['out_path'] = './outputs'
 
 # Setting predefined arguments.
 args = {
@@ -58,70 +58,67 @@ args = {
 }
 
 # Reading system parameters.
-conv_name = sys.argv[1]
+args['conv_name'] = sys.argv[1]
 args['hidden_classes'] = sys.argv[2]
 print('hidden: ' + sys.argv[2])
 
-dataset_name = sys.argv[3]
+args['dataset_name'] = sys.argv[3]
 
-epoch = int(sys.argv[4])
 
-hidden = []
-if '_' in args['hidden_classes']:
-    hidden = [int(h) for h in args['hidden_classes'].split('_')]
-else:
-    hidden = [int(args['hidden_classes'])]
-
-num_known_classes = list_dataset.num_classes - len(hidden)
-num_unknown_classes = len(hidden)
-
-if dataset_name == 'Potsdam':
-    args['epoch_num'] = 600
-    args['test_freq'] = 600
-    args['save_freq'] = 600
-    args['num_workers'] = 2
-
-# Setting experiment name.
-exp_name = conv_name + '_' + dataset_name + '_softmax_' + args['hidden_classes']
-
-pretrained_path = os.path.join(ckpt_path, exp_name.replace('softmax', 'base'), 'model_' + str(epoch) + '.pth')
-
-# Setting device [0|1|2].
-args['device'] = 0
 
 # Main function.
-def main(train_args):
+def main(args):
+
+    epoch = int(args['epoch_num'])
+
+    hidden = []
+    if '_' in args['hidden_classes']:
+        hidden = [int(h) for h in args['hidden_classes'].split('_')]
+    else:
+        hidden = [int(args['hidden_classes'])]
+
+    num_known_classes = list_dataset.num_classes - len(hidden)
+    num_unknown_classes = len(hidden)
+
+    # Setting experiment name.
+    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_softmax_' + args['hidden_classes']
+
+    pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('softmax', 'base'), 'model_' + str(epoch) + '.pth')
+
+    # Setting device [0|1|2].
+    args['device'] = 0
+
 
     # Setting network architecture.
-    if (conv_name == 'unet'):
+    if (args['conv_name'] == 'unet'):
 
         net = UNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50'):
+    elif (args['conv_name'] == 'fcnresnet50'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnext50'):
+    elif (args['conv_name'] == 'fcnresnext50'):
 
         net = FCNResNext50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnwideresnet50'):
+    elif (args['conv_name'] == 'fcnwideresnet50'):
 
         net = FCNWideResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121'):
+    elif (args['conv_name'] == 'fcndensenet121'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcninceptionv3'):
+    elif (args['conv_name'] == 'fcninceptionv3'):
 
         net = FCNInceptionv3(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnvgg19'):
+    elif (args['conv_name'] == 'fcnvgg19'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
 
-    elif (conv_name == 'segnet'):
+    elif (args['conv_name'] == 'segnet'):
 
         net = SegNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
@@ -129,27 +126,27 @@ def main(train_args):
     net.load_state_dict(torch.load(pretrained_path))
     print(net)
     
-    train_args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
+    args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
 
     # Setting datasets.
-    test_set = list_dataset.ListDataset(dataset_name, 'Test', (train_args['h_size'], train_args['w_size']), 'statistical', hidden)
-    test_loader = DataLoader(test_set, batch_size=1, num_workers=train_args['num_workers'], shuffle=False)
+    test_set = list_dataset.ListDataset(args['dataset_name'], 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
+    test_loader = DataLoader(test_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
     # Setting criterion.
     criterion = CrossEntropyLoss2d(size_average=False, ignore_index=5).cuda(args['device'])
 
     # Making sure checkpoint and output directories are created.
-    check_mkdir(ckpt_path)
-    check_mkdir(os.path.join(ckpt_path, exp_name))
-    check_mkdir(outp_path)
-    check_mkdir(os.path.join(outp_path, exp_name))
+    check_mkdir(args['ckpt_path'])
+    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(args['out_path'])
+    check_mkdir(os.path.join(args['out_path'], exp_name))
     
     # Computing test.
-    test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args, True, epoch % args['save_freq'] == 0)
+    test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args, True, epoch % args['save_freq'] == 0)
     
     print('Exiting...')
 
-def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args, save_images, save_model):
+def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args, save_images, save_model):
 
     # Setting network for evaluation mode.
     net.eval()
@@ -159,7 +156,7 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(outp_path, exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['out_path'], exp_name, 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -218,8 +215,8 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     # Saving predictions.
                     if (save_images):
                         
-                        pred_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
-                        prob_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
+                        pred_path = os.path.join(args['out_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
+                        prob_path = os.path.join(args['out_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
 
                         io.imsave(pred_path, util.img_as_ubyte(prds))
                         np.save(prob_path, np.transpose(soft_outs.detach().cpu().numpy().squeeze(), (1, 2, 0)))
