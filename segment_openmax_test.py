@@ -58,9 +58,9 @@ def main(args):
     num_unknown_classes = len(hidden)
 
     # Setting experiment name.
-    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_openmax_' + args['hidden_classes']
+    args['exp_name'] = args['conv_name'] + '_' + args['dataset_name'] + '_openmax_' + args['hidden_classes']
 
-    pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('openmax', 'base'), 'model_' + str(epoch) + '.pth')
+    pretrained_path = os.path.join(args['ckpt_path'], args['exp_name'].replace('openmax', 'base'), 'model_' + str(epoch) + '.pth')
     print('pretrained_path: "' + pretrained_path + '"')
 
     # Setting device [0|1|2].
@@ -133,9 +133,9 @@ def main(args):
 
     # Making sure checkpoint and output directories are created.
     check_mkdir(args['ckpt_path'])
-    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(os.path.join(args['ckpt_path'], args['exp_name']))
     check_mkdir(args['outp_path'])
-    check_mkdir(os.path.join(args['outp_path'], exp_name))
+    check_mkdir(os.path.join(args['outp_path'], args['exp_name']))
     
     # Validation function.
     mean_list, dist_list = validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args)
@@ -242,7 +242,7 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
         inps_all, labs_all, prds_all, true_all = [], [], [], []
 
         # Creating output directory.
-        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
 
         #####################################################
         # Iterating over batches (computing means). #########
@@ -351,7 +351,7 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -418,11 +418,11 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     # Saving predictions.
                     if (save_images):
 
-                        args['imag_path'] = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_imag_' + str(j) + '_' + str(k) + '.png'))
-                        mask_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_mask_' + str(j) + '_' + str(k) + '.png'))
-                        true_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_true_' + str(j) + '_' + str(k) + '.png'))
-                        pred_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
-                        prob_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
+                        args['imag_path'] = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_imag_' + str(j) + '_' + str(k) + '.png'))
+                        mask_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_mask_' + str(j) + '_' + str(k) + '.png'))
+                        true_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_true_' + str(j) + '_' + str(k) + '.png'))
+                        pred_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
+                        prob_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
 
                         io.imsave(args['imag_path'], np.transpose(inps_np, (1, 2, 0)))
                         io.imsave(mask_path, util.img_as_ubyte(labs_np))

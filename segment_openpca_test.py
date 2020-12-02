@@ -64,9 +64,9 @@ def main(args):
 
 
     # Setting experiment name.
-    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_openpca_' + args['hidden_classes']
+    args['exp_name'] = args['conv_name'] + '_' + args['dataset_name'] + '_openpca_' + args['hidden_classes']
 
-    pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('openpca', 'base'), 'model_' + str(epoch) + '.pth')
+    pretrained_path = os.path.join(args['ckpt_path'], args['exp_name'].replace('openpca', 'base'), 'model_' + str(epoch) + '.pth')
 
     # Setting device [0|1|2].
     args['device'] = 0
@@ -140,9 +140,9 @@ def main(args):
 
     # Making sure checkpoint and output directories are created.
     check_mkdir(args['ckpt_path'])
-    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(os.path.join(args['ckpt_path'], args['exp_name']))
     check_mkdir(args['outp_path'])
-    check_mkdir(os.path.join(args['outp_path'], exp_name))
+    check_mkdir(os.path.join(args['outp_path'], args['exp_name']))
     
     # Validation function.
     model_full = validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args)
@@ -217,7 +217,7 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
         
         for i, data in enumerate(val_loader):
             
@@ -333,7 +333,7 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
                   'thresholds': scr_thresholds}
     
     # Saving model on disk.
-    model_path = os.path.join(args['outp_path'], exp_name, 'model_pca.pkl')
+    model_path = os.path.join(args['outp_path'], args['exp_name'], 'model_pca.pkl')
     print('Saving model at "%s"...' % (model_path))
     sys.stdout.flush()
     joblib.dump(model_full, model_path)
@@ -348,7 +348,7 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -434,8 +434,8 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     # Saving predictions.
                     if (save_images):
 
-                        pred_prev_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prev_' + str(j) + '_' + str(k) + '.png'))
-                        scor_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_scor_' + str(j) + '_' + str(k) + '.npy'))
+                        pred_prev_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prev_' + str(j) + '_' + str(k) + '.png'))
+                        scor_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_scor_' + str(j) + '_' + str(k) + '.npy'))
                         
                         io.imsave(pred_prev_path, util.img_as_ubyte(prds.cpu().squeeze().numpy()))
                         np.save(scor_path, scores.squeeze())
