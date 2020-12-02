@@ -174,6 +174,12 @@ def main(args):
 		print('Loading pretrained weights from file "' + pretrained_path + '"')
 		net.load_state_dict(torch.load(pretrained_path))        
 	
+	import warnings
+	warnings.filterwarnings("ignore")
+	if args['baseline_train']==True:
+		test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
+	else:
+		test(test_loader, net, criterion, [], args['epoch_num'], num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
 # Training function.
 def train(train_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args):
 
