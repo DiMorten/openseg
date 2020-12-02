@@ -54,9 +54,9 @@ def main(args):
     num_unknown_classes = len(hidden)
 
     # Setting experiment name.
-    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_softmax_' + args['hidden_classes']
+    args['exp_name'] = args['conv_name'] + '_' + args['dataset_name'] + '_softmax_' + args['hidden_classes']
 
-    pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('softmax', 'base'), 'model_' + str(epoch) + '.pth')
+    pretrained_path = os.path.join(args['ckpt_path'], args['exp_name'].replace('softmax', 'base'), 'model_' + str(epoch) + '.pth')
 
     # Setting device [0|1|2].
     args['device'] = 0
@@ -110,9 +110,9 @@ def main(args):
 
     # Making sure checkpoint and output directories are created.
     check_mkdir(args['ckpt_path'])
-    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(os.path.join(args['ckpt_path'], args['exp_name']))
     check_mkdir(args['outp_path'])
-    check_mkdir(os.path.join(args['outp_path'], exp_name))
+    check_mkdir(os.path.join(args['outp_path'], args['exp_name']))
     
     # Computing test.
     test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args, True, epoch % args['save_freq'] == 0)
@@ -129,7 +129,7 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -188,8 +188,8 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     # Saving predictions.
                     if (save_images):
                         
-                        pred_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
-                        prob_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
+                        pred_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_pred_' + str(j) + '_' + str(k) + '.png'))
+                        prob_path = os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prob_' + str(j) + '_' + str(k) + '.npy'))
 
                         io.imsave(pred_path, util.img_as_ubyte(prds))
                         np.save(prob_path, np.transpose(soft_outs.detach().cpu().numpy().squeeze(), (1, 2, 0)))
