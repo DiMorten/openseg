@@ -136,7 +136,7 @@ def main(args):
     # else:
     #     file_mode = 'w'
     file_mode = 'w'
-
+'''
     with open(args['out_path'], file_mode) as file:
         
         for i in range(len(args['thresholds'])):
@@ -147,3 +147,4 @@ def main(args):
                                                                 rec_unk_list[i],
                                                                 acc_bal_list[i],
                                                                 kappa_list[i]))
+'''
