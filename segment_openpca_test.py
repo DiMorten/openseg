@@ -211,7 +211,8 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
         n_patches = 12393 # 8993 # Potsdam.
         
     np.random.seed(12345)
-    perm = np.random.permutation(n_patches)[:150].tolist()
+    #perm = np.random.permutation(n_patches)[:150].tolist()
+    perm = np.random.permutation(n_patches)[:50].tolist()
     
     with torch.no_grad():
 
