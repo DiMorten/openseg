@@ -45,108 +45,77 @@ Classes:
     6 = Boundaries
 '''
 
-# Predefining directories.
-ckpt_path = './ckpt'
-imag_path = './images'
-outp_path = './outputs'
 
-# Setting predefined arguments.
-args = {
-    'epoch_num': 1200,            # Number of epochs.
-    'lr': 1e-4,                   # Learning rate.
-    'weight_decay': 5e-4,         # L2 penalty.
-    'momentum': 0.9,              # Momentum.
-    'num_workers': 4,             # Number of workers on data loader.
-    'print_freq': 1,              # Printing frequency for mini-batch loss.
-    'w_size': 224,                # Width size for image resizing.
-    'h_size': 224,                # Height size for image resizing.
-    'test_freq': 1200,            # Test each test_freq epochs.
-    'save_freq': 1200,            # Save model each save_freq epochs.
-    'open_threshold': -50,        # Threshold for OpenSet.
-    'n_components': 16,           # Number of components for dimensionality reduction.
-}
 
-# Reading system parameters.
-conv_name = sys.argv[1]
-
-args['hidden_classes'] = sys.argv[2]
-print('hidden: ' + sys.argv[2])
-
-dataset_name = sys.argv[3]
-
-epoch = int(sys.argv[4])
-
-hidden = []
-if '_' in args['hidden_classes']:
-    hidden = [int(h) for h in args['hidden_classes'].split('_')]
-else:
-    hidden = [int(args['hidden_classes'])]
-
-num_known_classes = list_dataset.num_classes - len(hidden)
-num_unknown_classes = len(hidden)
-
-if dataset_name == 'Potsdam':
-    args['epoch_num'] = 600
-    args['test_freq'] = 600
-    args['save_freq'] = 600
-    args['num_workers'] = 2
-
-# Setting experiment name.
-exp_name = conv_name + '_' + dataset_name + '_openpca_' + args['hidden_classes']
-
-pretrained_path = os.path.join(ckpt_path, exp_name.replace('openpca', 'base'), 'model_' + str(epoch) + '.pth')
-
-# Setting device [0|1|2].
-args['device'] = 0
 
 # Main function.
-def main(train_args):
+def main(args):
+
+    epoch = args['epoch_num']
+
+    hidden = []
+    if '_' in args['hidden_classes']:
+        hidden = [int(h) for h in args['hidden_classes'].split('_')]
+    else:
+        hidden = [int(args['hidden_classes'])]
+
+    num_known_classes = list_dataset.num_classes - len(hidden)
+    num_unknown_classes = len(hidden)
+
+
+    # Setting experiment name.
+    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_openpca_' + args['hidden_classes']
+
+    pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('openpca', 'base'), 'model_' + str(epoch) + '.pth')
+
+    # Setting device [0|1|2].
+    args['device'] = 0
 
     # Setting network architecture.
-    if (conv_name == 'unet'):
+    if (args['conv_name'] == 'unet'):
 
         net = UNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50'):
+    elif (args['conv_name'] == 'fcnresnet50'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50pretrained'):
+    elif (args['conv_name'] == 'fcnresnet50pretrained'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnresnext50'):
+    elif (args['conv_name'] == 'fcnresnext50'):
 
         net = FCNResNext50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnwideresnet50'):
+    elif (args['conv_name'] == 'fcnwideresnet50'):
 
         net = FCNWideResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121'):
+    elif (args['conv_name'] == 'fcndensenet121'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121pretrained'):
+    elif (args['conv_name'] == 'fcndensenet121pretrained'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnvgg19'):
+    elif (args['conv_name'] == 'fcnvgg19'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnvgg19pretrained'):
+    elif (args['conv_name'] == 'fcnvgg19pretrained'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcninceptionv3'):
+    elif (args['conv_name'] == 'fcninceptionv3'):
 
         net = FCNInceptionv3(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
 
-    elif (conv_name == 'segnet'):
+    elif (args['conv_name'] == 'segnet'):
 
         net = SegNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
@@ -154,32 +123,32 @@ def main(train_args):
     net.load_state_dict(torch.load(pretrained_path))
 #     print(net)
     
-    train_args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
+    args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
 
     # Setting datasets.
-    train_set = list_dataset.ListDataset(dataset_name, 'Train', (train_args['h_size'], train_args['w_size']), 'statistical', hidden)
-    train_loader = DataLoader(train_set, batch_size=1, num_workers=train_args['num_workers'], shuffle=True)
+    train_set = list_dataset.ListDataset(args['dataset_name'], 'Train', (args['h_size'], args['w_size']), 'statistical', hidden)
+    train_loader = DataLoader(train_set, batch_size=1, num_workers=args['num_workers'], shuffle=True)
 
-    val_set = list_dataset.ListDataset(dataset_name, 'Validate', (train_args['h_size'], train_args['w_size']), 'statistical', hidden)
-    val_loader = DataLoader(val_set, batch_size=1, num_workers=train_args['num_workers'], shuffle=False)
+    val_set = list_dataset.ListDataset(args['dataset_name'], 'Validate', (args['h_size'], args['w_size']), 'statistical', hidden)
+    val_loader = DataLoader(val_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
-    test_set = list_dataset.ListDataset(dataset_name, 'Test', (train_args['h_size'], train_args['w_size']), 'statistical', hidden)
-    test_loader = DataLoader(test_set, batch_size=1, num_workers=train_args['num_workers'], shuffle=False)
+    test_set = list_dataset.ListDataset(args['dataset_name'], 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
+    test_loader = DataLoader(test_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
     # Setting criterion.
     criterion = CrossEntropyLoss2d(size_average=False, ignore_index=5).cuda(args['device'])
 
     # Making sure checkpoint and output directories are created.
-    check_mkdir(ckpt_path)
-    check_mkdir(os.path.join(ckpt_path, exp_name))
-    check_mkdir(outp_path)
-    check_mkdir(os.path.join(outp_path, exp_name))
+    check_mkdir(args['ckpt_path'])
+    check_mkdir(os.path.join(args['ckpt_path'], exp_name))
+    check_mkdir(args['outp_path'])
+    check_mkdir(os.path.join(args['outp_path'], exp_name))
     
     # Validation function.
-    model_full = validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args)
+    model_full = validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args)
     
     # Computing test.
-    test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args, True, epoch % args['save_freq'] == 0, model_full)
+    test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args, True, epoch % args['save_freq'] == 0, model_full)
     
     print('Exiting...')
 
@@ -223,7 +192,7 @@ def pred_pixelwise(model_full, feat_np, prds_np, num_known_classes, threshold):
     prds_np[scores < threshold] = num_known_classes
     return prds_np, scores
     
-def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args):
+def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args):
     
     model_list = []
     feat_list = []
@@ -236,9 +205,9 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
     count = 0
     
     n_patches = 0
-    if dataset_name == 'Vaihingen':
+    if args['dataset_name'] == 'Vaihingen':
         n_patches = 907 # Vaihingen.
-    elif dataset_name == 'Potsdam':
+    elif args['dataset_name'] == 'Potsdam':
         n_patches = 12393 # 8993 # Potsdam.
         
     np.random.seed(12345)
@@ -247,7 +216,7 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(outp_path, exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
         
         for i, data in enumerate(val_loader):
             
@@ -281,19 +250,19 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
                         true = Variable(true).cuda(args['device'])
 
                         # Forwarding.
-                        if conv_name == 'unet':
+                        if args['conv_name'] == 'unet':
                             outs, dec1, dec2, dec3, dec4 = net(inps, feat=True)
-                        elif conv_name == 'fcndensenet121':
+                        elif args['conv_name'] == 'fcndensenet121':
                             outs, classif1, fv2 = net(inps, feat=True)
-                        elif conv_name == 'fcnresnet50':
+                        elif args['conv_name'] == 'fcnresnet50':
                             outs, classif1, fv2 = net(inps, feat=True)
-                        elif conv_name == 'fcnwideresnet50':
+                        elif args['conv_name'] == 'fcnwideresnet50':
                             outs, classif1, fv2 = net(inps, feat=True)
-                        elif conv_name == 'fcnresnext50':
+                        elif args['conv_name'] == 'fcnresnext50':
                             outs, classif1, fv2 = net(inps, feat=True)
-                        elif conv_name == 'fcnvgg19':
+                        elif args['conv_name'] == 'fcnvgg19':
                             outs, classif1, fv3 = net(inps, feat=True)
-                        elif conv_name == 'segnet':
+                        elif args['conv_name'] == 'segnet':
                             outs, x_10d, x_20d = net(inps, feat=True)
 
                         # Computing loss.
@@ -302,19 +271,19 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
                         # Obtaining predictions.
                         prds = soft_outs.data.max(1)[1]
                         
-                        if conv_name == 'unet':
+                        if args['conv_name'] == 'unet':
                             feat_flat = torch.cat([outs.squeeze(), dec1.squeeze(), dec2.squeeze(), dec3.squeeze()], 0)
-                        elif conv_name == 'fcndensenet121':
+                        elif args['conv_name'] == 'fcndensenet121':
                             feat_flat = torch.cat([outs.squeeze(), classif1.squeeze(), fv2.squeeze()], 0)
-                        elif conv_name == 'fcnresnet50':
+                        elif args['conv_name'] == 'fcnresnet50':
                             feat_flat = torch.cat([outs.squeeze(), classif1.squeeze(), fv2.squeeze()], 0)
-                        elif conv_name == 'fcnresnext50':
+                        elif args['conv_name'] == 'fcnresnext50':
                             feat_flat = torch.cat([outs.squeeze(), classif1.squeeze(), fv2.squeeze()], 0)
-                        elif conv_name == 'fcnwideresnet50':
+                        elif args['conv_name'] == 'fcnwideresnet50':
                             feat_flat = torch.cat([outs.squeeze(), classif1.squeeze(), fv2.squeeze()], 0)
-                        elif conv_name == 'fcnvgg19':
+                        elif args['conv_name'] == 'fcnvgg19':
                             feat_flat = torch.cat([outs.squeeze(), classif1.squeeze(), fv3.squeeze()], 0)
-                        elif conv_name == 'segnet':
+                        elif args['conv_name'] == 'segnet':
                             feat_flat = torch.cat([outs.squeeze(), x_10d.squeeze(), x_20d.squeeze()], 0)
                 
                         feat_flat = feat_flat.permute(1, 2, 0).contiguous().view(feat_flat.size(1) * feat_flat.size(2), feat_flat.size(0)).cpu().numpy()
@@ -363,14 +332,14 @@ def validate(val_loader, net, criterion, epoch, num_known_classes, num_unknown_c
                   'thresholds': scr_thresholds}
     
     # Saving model on disk.
-    model_path = os.path.join(outp_path, exp_name, 'model_pca.pkl')
+    model_path = os.path.join(args['outp_path'], exp_name, 'model_pca.pkl')
     print('Saving model at "%s"...' % (model_path))
     sys.stdout.flush()
     joblib.dump(model_full, model_path)
     
     return model_full
 
-def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, train_args, save_images, save_model, model_full):
+def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_classes, hidden, args, save_images, save_model, model_full):
 
     # Setting network for evaluation mode.
     net.eval()
@@ -378,7 +347,7 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
     with torch.no_grad():
 
         # Creating output directory.
-        check_mkdir(os.path.join(outp_path, exp_name, 'epoch_' + str(epoch)))
+        check_mkdir(os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch)))
 
         # Iterating over batches.
         for i, data in enumerate(test_loader):
@@ -416,19 +385,19 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     true = Variable(true).cuda(args['device'])
 
                     # Forwarding.
-                    if conv_name == 'unet':
+                    if args['conv_name'] == 'unet':
                         outs, dec1, dec2, dec3, dec4 = net(inps, feat=True)
-                    elif conv_name == 'fcndensenet121':
+                    elif args['conv_name'] == 'fcndensenet121':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnresnet50':
+                    elif args['conv_name'] == 'fcnresnet50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnresnext50':
+                    elif args['conv_name'] == 'fcnresnext50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnwideresnet50':
+                    elif args['conv_name'] == 'fcnwideresnet50':
                         outs, classif1, fv2 = net(inps, feat=True)
-                    elif conv_name == 'fcnvgg19':
+                    elif args['conv_name'] == 'fcnvgg19':
                         outs, classif1, fv3 = net(inps, feat=True)
-                    elif conv_name == 'segnet':
+                    elif args['conv_name'] == 'segnet':
                         outs, x_10d, x_20d = net(inps, feat=True)
 
                     # Computing probabilities.
@@ -438,19 +407,19 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     prds = soft_outs.data.max(1)[1]
 
                     # Obtaining posterior predictions.
-                    if conv_name == 'unet':
+                    if args['conv_name'] == 'unet':
                         feat_flat = torch.cat([outs, dec1, dec2, dec3], 1)
-                    elif conv_name == 'fcndensenet121':
+                    elif args['conv_name'] == 'fcndensenet121':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnresnet50':
+                    elif args['conv_name'] == 'fcnresnet50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnresnext50':
+                    elif args['conv_name'] == 'fcnresnext50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnwideresnet50':
+                    elif args['conv_name'] == 'fcnwideresnet50':
                         feat_flat = torch.cat([outs, classif1, fv2], 1)
-                    elif conv_name == 'fcnvgg19':
+                    elif args['conv_name'] == 'fcnvgg19':
                         feat_flat = torch.cat([outs, classif1, fv3], 1)
-                    elif conv_name == 'segnet':
+                    elif args['conv_name'] == 'segnet':
                         feat_flat = torch.cat([outs, x_10d, x_20d], 1)
                         
                     feat_flat = feat_flat.permute(0, 2, 3, 1).contiguous().view(feat_flat.size(0) * feat_flat.size(2) * feat_flat.size(3), feat_flat.size(1)).cpu().numpy()
@@ -464,8 +433,8 @@ def test(test_loader, net, criterion, epoch, num_known_classes, num_unknown_clas
                     # Saving predictions.
                     if (save_images):
 
-                        pred_prev_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prev_' + str(j) + '_' + str(k) + '.png'))
-                        scor_path = os.path.join(outp_path, exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_scor_' + str(j) + '_' + str(k) + '.npy'))
+                        pred_prev_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_prev_' + str(j) + '_' + str(k) + '.png'))
+                        scor_path = os.path.join(args['outp_path'], exp_name, 'epoch_' + str(epoch), img_name[0].replace('.tif', '_scor_' + str(j) + '_' + str(k) + '.npy'))
                         
                         io.imsave(pred_prev_path, util.img_as_ubyte(prds.cpu().squeeze().numpy()))
                         np.save(scor_path, scores.squeeze())

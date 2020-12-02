@@ -58,7 +58,7 @@ def main(args):
     num_unknown_classes = len(hidden)
 
     # Setting experiment name.
-    exp_name = conv_name + '_' + dataset_name + '_openmax_' + args['hidden_classes']
+    exp_name = args['conv_name'] + '_' + args['dataset_name'] + '_openmax_' + args['hidden_classes']
 
     pretrained_path = os.path.join(args['ckpt_path'], exp_name.replace('openmax', 'base'), 'model_' + str(epoch) + '.pth')
     print('pretrained_path: "' + pretrained_path + '"')
@@ -68,50 +68,50 @@ def main(args):
 
 
     # Setting network architecture.
-    if (conv_name == 'unet'):
+    if (args['conv_name'] == 'unet'):
 
         net = UNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50'):
+    elif (args['conv_name'] == 'fcnresnet50'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnresnet50pretrained'):
+    elif (args['conv_name'] == 'fcnresnet50pretrained'):
 
         net = FCNResNet50(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnresnext50'):
+    elif (args['conv_name'] == 'fcnresnext50'):
 
         net = FCNResNext50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnwideresnet50'):
+    elif (args['conv_name'] == 'fcnwideresnet50'):
 
         net = FCNWideResNet50(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121'):
+    elif (args['conv_name'] == 'fcndensenet121'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcndensenet121pretrained'):
+    elif (args['conv_name'] == 'fcndensenet121pretrained'):
 
         net = FCNDenseNet121(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcnvgg19'):
+    elif (args['conv_name'] == 'fcnvgg19'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
         
-    elif (conv_name == 'fcnvgg19pretrained'):
+    elif (args['conv_name'] == 'fcnvgg19pretrained'):
 
         net = FCNVGG19(3, num_classes=list_dataset.num_classes, pretrained=True, skip=True, hidden_classes=hidden).cuda(args['device'])
         args['lr'] *= 0.1
         
-    elif (conv_name == 'fcninceptionv3'):
+    elif (args['conv_name'] == 'fcninceptionv3'):
 
         net = FCNInceptionv3(3, num_classes=list_dataset.num_classes, pretrained=False, skip=True, hidden_classes=hidden).cuda(args['device'])
 
-    elif (conv_name == 'segnet'):
+    elif (args['conv_name'] == 'segnet'):
 
         net = SegNet(3, num_classes=list_dataset.num_classes, hidden_classes=hidden).cuda(args['device'])
         
@@ -122,10 +122,10 @@ def main(args):
     args['best_record'] = {'epoch': 0, 'lr': 1e-4, 'val_loss': 1e10, 'acc': 0, 'acc_cls': 0, 'iou': 0}
 
     # Setting datasets.
-    val_set = list_dataset.ListDataset(dataset_name, 'Validate', (args['h_size'], args['w_size']), 'statistical', hidden)
+    val_set = list_dataset.ListDataset(args['dataset_name'], 'Validate', (args['h_size'], args['w_size']), 'statistical', hidden)
     val_loader = DataLoader(val_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
-    test_set = list_dataset.ListDataset(dataset_name, 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
+    test_set = list_dataset.ListDataset(args['dataset_name'], 'Test', (args['h_size'], args['w_size']), 'statistical', hidden)
     test_loader = DataLoader(test_set, batch_size=1, num_workers=args['num_workers'], shuffle=False)
 
     # Setting criterion.
