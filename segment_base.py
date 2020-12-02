@@ -5,7 +5,7 @@ import time
 import gc
 import sys
 import numpy as np
-
+import pathlib
 import scipy.spatial.distance as spd
 
 from skimage import io
@@ -180,7 +180,7 @@ def main(args):
 	if args['baseline_train']==True:
 		test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
 	else:
-		test(test_loader, net, criterion, [], args['epoch_num'], num_known_classes, num_unknown_classes, hidden, args, True, True) #epoch % args['save_freq'] == 0)
+		test(test_loader, net, criterion, [], args['epoch_num'], num_known_classes, num_unknown_classes, hidden, args, True, False) #epoch % args['save_freq'] == 0)
 # Training function.
 def train(train_loader, net, criterion, optimizer, epoch, num_known_classes, num_unknown_classes, hidden, args):
 
@@ -249,7 +249,7 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
 	with torch.no_grad():
 
 		# Creating output directory.
-		check_mkdir(os.path.join(args['outp_path'], args['exp_name'], 'epoch_' + str(epoch)))
+		pathlib.Path(os.path.join(args['outp_path'][2:], args['exp_name'], 'epoch_' + str(epoch))).mkdir(parents=True, exist_ok=True)
 
 		# Iterating over batches.
 		for i, data in enumerate(test_loader):
@@ -346,10 +346,7 @@ def test(test_loader, net, criterion, optimizer, epoch, num_known_classes, num_u
 					inps_np = inps.detach().squeeze(0).cpu().numpy()
 					labs_np = labs.detach().squeeze(0).cpu().numpy()
 					true_np = true.detach().squeeze(0).cpu().numpy()
-					
-					print("Test patch result shape",labs_np.shape,true_np.shape)
-					accuracy_value = metrics.accuracy_score(true_np,labs_np)
-					print("Accuracy value",accuracy_value)                    
+					        
 					
 					# Saving predictions.
 					if (save_images):
