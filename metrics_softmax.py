@@ -123,6 +123,7 @@ def main(args):
         kappa_list.append(kap)
 
     args['thresholds'] = np.asarray(args['thresholds'])
+    metric_values = {}
     metric_values['acc_known_list'] = np.asarray(acc_known_list) * 100
     metric_values['pre_unk_list'] = np.asarray(pre_unk_list) * 100
     metric_values['rec_unk_list'] = np.asarray(rec_unk_list) * 100
