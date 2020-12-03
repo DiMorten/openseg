@@ -38,12 +38,13 @@ class ListDataset(data.Dataset):
 
         # Making sure the mode is correct.
         #assert self.mode in ['Train', 'Test', 'Validate', 'TrainAsValidation']
+        assert self.mode in ['Train', 'Test', 'Validate']
 
         # Setting string for the mode.
         img_dir = os.path.join(self.root, self.mode, 'JPEGImages')
         msk_dir = os.path.join(self.root, self.mode, 'Masks')
         
-        if self.mode == 'TrainAsValidation':
+        if self.mode == 'Validate':
             img_dir = os.path.join(self.root, 'Train', 'JPEGImages')
             msk_dir = os.path.join(self.root, 'Train', 'Masks')
 
