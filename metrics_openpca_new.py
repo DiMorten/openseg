@@ -103,9 +103,10 @@ def main(args):
         
         prd_np = prd_list.ravel()
         tru_np = tru_list.ravel()
-
+        print('tru_np.shape, prd_np.shape', tru_np.shape, prd_np.shape)
         tru_valid = tru_np[tru_np < 5]
         prd_valid = prd_np[tru_np < 5]
+        print('tru_valid.shape, prd_valid.shape', tru_valid.shape, prd_valid.shape)
 
         print('Computing CM...')
         cm = metrics.confusion_matrix(tru_valid, prd_valid)
