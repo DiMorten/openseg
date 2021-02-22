@@ -104,13 +104,16 @@ def main(args):
         prd_np = prd_list.ravel()
         tru_np = tru_list.ravel()
         print('tru_np.shape, prd_np.shape', tru_np.shape, prd_np.shape)
+        print('tru_np unique, prd_np unique', np.unique(tru_np,return_counts=True), np.unique(prd_np,return_counts=True))
+
         tru_valid = tru_np[tru_np < 5]
         prd_valid = prd_np[tru_np < 5]
         print('tru_valid.shape, prd_valid.shape', tru_valid.shape, prd_valid.shape)
+        print('tru_valid unique, prd_valid unique', np.unique(tru_valid,return_counts=True), np.unique(prd_valid,return_counts=True))
 
         print('Computing CM...')
         cm = metrics.confusion_matrix(tru_valid, prd_valid)
-
+        print('Confusion Matrix result', cm)
         print('Computing Accs...')
         tru_known = 0.0
         sum_known = 0.0
