@@ -188,7 +188,7 @@ def pred_pixelwise(model_full, feat_np, prds_np, num_known_classes, threshold):
         feat_msk = (prds_np == c)
         if np.any(feat_msk):
             scores[feat_msk] = model_full['generative'][c].score_samples(feat_np[feat_msk, :])
-        
+    print("scores stats min, avg, max",np.min(scores),np.average(scores),np.max(scores))    
     prds_np[scores < threshold] = num_known_classes
     return prds_np, scores
     
